@@ -1,7 +1,18 @@
 #!/usr/bin/env python3
 """this python file contains the implementation of the code of the paper
+'Evolved interactions stabilize many coexisting phases in multicomponent fluids'
 
-####
+The modules contains a few global constants, which set parameters of the algorithm as
+described in the paper. They typically do not need to be changed. A good entry point
+into the code might be to create a random interaction matrix and a random initial
+composition using `random_interaction_matrix` and `get_uniform_random_composition`,
+respectively. The function `evolve_dynamics` can then be used to evolve Eq. 4 in the
+paper to its stationary state, whose composition the function returns. The returned
+composition matrix can be fed into `count_phases` to obtain the number of distinct
+phases. An ensemble average over initial conditions is demonstrated in the function
+`estimate_performance`, which also uses Eq. 5 of the paper to estimate how well the
+particular interaction matrix obtains a given target number of phases. Finally,
+`run_evolution` demonstrates the evolutionary optimization over multiple generations.
 """
 
 from typing import List, Tuple
@@ -33,7 +44,7 @@ def random_interaction_matrix(
         chi_mean (float): The mean interaction strength
         chi_std (float): The standard deviation of the interactions
 
-    Retruns:
+    Returns:
         The full, symmetric interaction matrix
     """
     if chi_mean is None:
@@ -127,7 +138,7 @@ def evolution_rate(phis: np.ndarray, chis: np.ndarray = None) -> np.ndarray:
         chis: The interaction matrix
 
     Returns:
-        The change in composition (Eq. 4)
+        The rate of change of the composition (Eq. 4)
     """
     num_phases, num_comps = phis.shape
 
