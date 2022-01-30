@@ -64,20 +64,31 @@ def random_interaction_matrix(
     return chis
 
 
-def mutate(population: List[np.ndarray], mutation_size: float = 0.1) -> None:
+def mutate(
+    population: List[np.ndarray], mutation_size: float = 0.1, norm_max: float = np.inf
+) -> None:
     """mutate all interaction matrices in a population
 
     Args:
         population (list): The interaction matrices of all individuals
         mutation_size (float): Magnitude of the perturbation
+        norm_max (float): The maximal norm the matrix may attain
     """
     for chis in population:
         num_comp = len(chis)
+
+        # add normally distributed random number to independent entries
         Δchi = np.zeros((num_comp, num_comp))
-        Δchi[np.triu_indices_from(Δchi, 1)] = np.random.normal(
-            0, mutation_size, size=num_comp * (num_comp - 1) // 2
-        )
-        chis += Δchi + Δchi.T
+        num_entries = num_comp * (num_comp - 1) // 2
+        idx = np.triu_indices_from(Δchi, k=1)
+        Δchi[idx] = np.random.normal(0, mutation_size, size=num_entries)
+        chis += Δchi + Δchi.T  # preserve symmetry
+
+        if np.isfinite(norm_max):
+            # rescale entries to obey limit
+            norm = np.mean(np.abs(chis[idx]))
+            if norm > norm_max:
+                chis *= norm_max / norm
 
 
 @njit
